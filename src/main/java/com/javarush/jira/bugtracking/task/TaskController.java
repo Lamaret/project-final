@@ -170,4 +170,5 @@ public class TaskController {
         log.info("remove tag {} from task {}", tag, id);
         taskService.removeTag(id, tag);
     }
+
 }

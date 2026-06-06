@@ -326,3 +326,13 @@ values ('todo', 'ToDo', 3, 'in_progress,canceled|'),
 
 drop index UK_USER_BELONG;
 create index UK_USER_BELONG on USER_BELONG (OBJECT_ID, OBJECT_TYPE, USER_ID, USER_TYPE_CODE);
+
+INSERT INTO USERS (ID, DISPLAY_NAME, EMAIL, FIRST_NAME, PASSWORD) VALUES (200, 'TimeTracker', 'tracker@gmail.com', 'Time', 'pass');
+INSERT INTO PROJECT (ID, CODE, TITLE, DESCRIPTION, TYPE_CODE) VALUES (200, 'TIME', 'Time Project', 'Desc', 'task_tracker');
+
+INSERT INTO TASK (ID, TITLE, TYPE_CODE, STATUS_CODE, PROJECT_ID) VALUES (200, 'Time Task', 'task', 'done', 200);
+
+INSERT INTO ACTIVITY (ID, AUTHOR_ID, TASK_ID, UPDATED, STATUS_CODE) VALUES
+(201, 200, 200, '2026-06-01 10:00:00', 'in_progress'),
+(202, 200, 200, '2026-06-03 14:00:00', 'ready_for_review'),
+(203, 200, 200, '2026-06-04 18:00:00', 'done');
