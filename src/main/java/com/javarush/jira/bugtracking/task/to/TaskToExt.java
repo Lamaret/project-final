@@ -28,13 +28,17 @@ public class TaskToExt extends TaskTo {
     @Positive
     Integer estimate;
 
+    @Nullable
+    java.util.Set<String> tags;
+
     public TaskToExt(Long id, String code, String title, String description, String typeCode, String statusCode, String priorityCode,
-                     LocalDateTime updated, Integer estimate, Long parentId, long projectId, Long sprintId) {
+                     LocalDateTime updated, Integer estimate, Long parentId, long projectId, Long sprintId, java.util.Set<String> tags) {
         super(id, code, title, typeCode, statusCode, parentId, projectId, sprintId);
         this.description = description;
         this.priorityCode = priorityCode;
         this.updated = updated;
         this.estimate = estimate;
+        this.tags = tags;
     }
 
     @Override

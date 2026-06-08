@@ -13,18 +13,21 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.context.request.WebRequestInterceptor;
 import org.springframework.web.filter.ForwardedHeaderFilter;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
+import org.springframework.web.servlet.i18n.CookieLocaleResolver;
+import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.mvc.UrlFilenameViewController;
 
 import java.time.Duration;
+import java.util.Locale;
 import java.util.Properties;
 
-//@EnableWebMvc : http://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-spring-mvc-auto-configuration
 @EnableAutoConfiguration
 @Configuration
 @AllArgsConstructor
@@ -53,12 +56,27 @@ public class MvcConfig implements WebMvcConfigurer {
         }
     });
 
+    @Bean
+    public LocaleResolver localeResolver() {
+        CookieLocaleResolver slr = new CookieLocaleResolver();
+        slr.setDefaultLocale(Locale.ENGLISH);
+        slr.setCookieName("lang");
+        return slr;
+    }
+
+    @Bean
+    public LocaleChangeInterceptor localeChangeInterceptor() {
+        LocaleChangeInterceptor lci = new LocaleChangeInterceptor();
+        lci.setParamName("lang");
+        return lci;
+    }
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(authInterceptor).excludePathPatterns("/api/**");
+        registry.addInterceptor(localeChangeInterceptor());
     }
 
-    //  http://www.codejava.net/frameworks/spring/spring-mvc-url-based-view-resolution-with-urlfilenameviewcontroller-example
     @Bean
     public SimpleUrlHandlerMapping getUrlHandlerMapping() {
         return new SimpleUrlHandlerMapping() {{
@@ -70,7 +88,6 @@ public class MvcConfig implements WebMvcConfigurer {
         }};
     }
 
-    //  https://springdoc.org/index.html#how-can-i-deploy-springdoc-openapi-ui-behind-a-reverse-proxy
     @Bean
     ForwardedHeaderFilter forwardedHeaderFilter() {
         return new ForwardedHeaderFilter();
@@ -88,7 +105,6 @@ public class MvcConfig implements WebMvcConfigurer {
     }
 
     @Bean
-//    https://stackoverflow.com/a/46966350/548473
     public RestTemplate restTemplate(RestTemplateBuilder restTemplateBuilder) {
         return restTemplateBuilder
                 .setConnectTimeout(Duration.ofSeconds(10))

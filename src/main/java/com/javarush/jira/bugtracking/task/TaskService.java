@@ -19,8 +19,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import static com.javarush.jira.bugtracking.ObjectType.TASK;
 import static com.javarush.jira.bugtracking.task.TaskUtil.fillExtraFields;
@@ -139,5 +141,55 @@ public class TaskService {
         if (!userType.equals(possibleUserType)) {
             throw new DataConflictException(String.format(assign ? CANNOT_ASSIGN : CANNOT_UN_ASSIGN, userType, task.getStatusCode()));
         }
+    }
+
+    @Transactional
+    public void addTags(long taskId, Set<String> tags) {
+        Task task = handler.getRepository().getExisted(taskId);
+        task.getTags().addAll(tags);
+        handler.getRepository().save(task);
+    }
+
+    @Transactional
+    public void removeTag(long taskId, String tag) {
+        Task task = handler.getRepository().getExisted(taskId);
+        task.getTags().remove(tag);
+        handler.getRepository().save(task);
+    }
+
+    public Duration getDevelopmentTime(Task task) {
+        return calculateSpentTime(task, "in_progress", "ready_for_review");
+    }
+
+    public Duration getTestingTime(Task task) {
+        return calculateSpentTime(task, "ready_for_review", "done");
+    }
+
+    private Duration calculateSpentTime(Task task, String startStatus, String endStatus) {
+        if (task == null || task.getActivities() == null) {
+            return Duration.ZERO;
+        }
+
+        LocalDateTime startPoint = null;
+        LocalDateTime endPoint = null;
+
+        for (Activity activity : task.getActivities()) {
+            if (startStatus.equals(activity.getStatusCode())) {
+                if (startPoint == null || activity.getUpdated().isBefore(startPoint)) {
+                    startPoint = activity.getUpdated();
+                }
+            }
+            if (endStatus.equals(activity.getStatusCode())) {
+                if (endPoint == null || activity.getUpdated().isAfter(endPoint)) {
+                    endPoint = activity.getUpdated();
+                }
+            }
+        }
+
+        if (startPoint != null && endPoint != null && endPoint.isAfter(startPoint)) {
+            return Duration.between(startPoint, endPoint);
+        }
+
+        return Duration.ZERO;
     }
 }

@@ -11,12 +11,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 import org.springframework.http.ProblemDetail;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
+import javax.sql.DataSource;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
@@ -65,5 +67,21 @@ public class AppConfig {
     interface MixIn {
         @JsonAnyGetter
         Map<String, Object> getProperties();
+    }
+    @Bean
+    @Profile("prod")
+    public DataSource prodDataSource(org.springframework.boot.autoconfigure.jdbc.DataSourceProperties properties) {
+        return properties.initializeDataSourceBuilder().build();
+    }
+
+    @Bean
+    @Profile("test")
+    public DataSource testDataSource() {
+        return org.springframework.boot.jdbc.DataSourceBuilder.create()
+                .driverClassName("org.h2.Driver")
+                .url("jdbc:h2:mem:jira-test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1")
+                .username("sa")
+                .password("")
+                .build();
     }
 }
