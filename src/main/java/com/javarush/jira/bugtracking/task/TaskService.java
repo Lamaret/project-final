@@ -22,6 +22,7 @@ import org.springframework.util.Assert;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import static com.javarush.jira.bugtracking.ObjectType.TASK;
 import static com.javarush.jira.bugtracking.task.TaskUtil.fillExtraFields;
@@ -142,9 +143,8 @@ public class TaskService {
         }
     }
 
-
     @Transactional
-    public void addTags(long taskId, java.util.Set<String> tags) {
+    public void addTags(long taskId, Set<String> tags) {
         Task task = handler.getRepository().getExisted(taskId);
         task.getTags().addAll(tags);
         handler.getRepository().save(task);
@@ -157,17 +157,17 @@ public class TaskService {
         handler.getRepository().save(task);
     }
 
-    public java.time.Duration getDevelopmentTime(Task task) {
+    public Duration getDevelopmentTime(Task task) {
         return calculateSpentTime(task, "in_progress", "ready_for_review");
     }
 
-    public java.time.Duration getTestingTime(Task task) {
+    public Duration getTestingTime(Task task) {
         return calculateSpentTime(task, "ready_for_review", "done");
     }
 
-    private java.time.Duration calculateSpentTime(Task task, String startStatus, String endStatus) {
+    private Duration calculateSpentTime(Task task, String startStatus, String endStatus) {
         if (task == null || task.getActivities() == null) {
-            return java.time.Duration.ZERO;
+            return Duration.ZERO;
         }
 
         LocalDateTime startPoint = null;
@@ -187,9 +187,9 @@ public class TaskService {
         }
 
         if (startPoint != null && endPoint != null && endPoint.isAfter(startPoint)) {
-            return java.time.Duration.between(startPoint, endPoint);
+            return Duration.between(startPoint, endPoint);
         }
 
-        return java.time.Duration.ZERO;
+        return Duration.ZERO;
     }
 }
